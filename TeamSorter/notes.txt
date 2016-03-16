@@ -1,0 +1,7 @@
+Backend things to do
+-- Sort names based on new lines
+-- Upload and parse from csv
+-- calculate average mmr
+-- pull mmr data based on champion name
+-- Display teams and the average team mmr
+-- create temporary links 
