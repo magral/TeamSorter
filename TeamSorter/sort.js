@@ -1,4 +1,5 @@
- ParseNames = function(){
+var API_KEY = "1e9722cb-94a0-4b5f-821f-0492453429b2";
+ParseNames = function(){
 	var names = document.getElementById("sumNames").value;
 	var parsedNames = Array();
 	var tmp = "";
@@ -57,3 +58,121 @@ GetFile = function(){
 	console.log(csvFile);
 	return csvFile;
 };
+GetSummonerID = function(){
+	var SUMMONER_NAME = "Bearly Leah";
+	$.ajax({
+		url: 'https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/' + SUMMONER_NAME + '?api_key=' + API_KEY,
+		type: 'GET',
+		dataType: 'json',
+		data: {
+			
+		},
+		success: function(json){
+			SUMMONER_NAME = SUMMONER_NAME.replace(" ", "");
+			SUMMONER_NAME = SUMMONER_NAME.toLowerCase().trim();		
+			
+			var summonerID = json[SUMMONER_NAME].id;
+			
+			document.getElementById("SummonerID").innerHTML = summonerID;
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+			alert("error getting summoner data!");
+		}
+	});
+};
+var matchIDs = [];
+GetMatchList = function(){
+	var SUMMONER_ID = "28869688";
+	var MAX_SEARCH_LENGTH = 1;
+	$.ajax({
+		url: 'https://na.api.pvp.net/api/lol/na/v2.2/matchlist/by-summoner/' + SUMMONER_ID + '?seasons=SEASON2016&beginIndex=0&endIndex=' + MAX_SEARCH_LENGTH.toString() + '&api_key=' + API_KEY,
+		type: 'GET',
+		dataType: 'json',
+		data: {
+	
+		},
+		success: function(json){
+			for(var i = 0; i < MAX_SEARCH_LENGTH; i++){
+				matchIDs[i] = json["matches"][i].matchId;
+			}
+			for(var i = 0; i < MAX_SEARCH_LENGTH; i++){
+				GetParticipantsFromMatchlist(matchIDs[i]);
+			}
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+			alert("error getting match data!");
+		}
+	});
+};
+GetParticipantsFromMatchlist = function(matchID){
+	$.ajax({
+		url: 'https://na.api.pvp.net/api/lol/na/v2.2/match/' + matchID.toString() + '?includeTimeline=false&api_key=' + API_KEY,
+		type: 'GET',
+		dataType:'json',
+		data:{
+			
+		},
+		success: function(json){
+			console.log(json["participantIdentities"][0]["player"].summonerId);
+			GetDivisionOfPlayer(json["participantIdentities"][0]["player"].summonerId);
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+			alert("Error getting participant data");
+		}
+	});
+	//move this call into get match list
+	//call per match list id
+};
+GetDivisionOfPlayer = function(summonerID){
+	$.ajax({
+		url: 'https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/' + summonerID.toString() + '/entry?api_key=' + API_KEY,
+		type: 'GET',
+		dataType: 'json',
+		data: {
+			
+		},
+		success: function(json){
+			console.log(json[summonerID.toString()][0]["entries"][0].division);
+			console.log(json[summonerID.toString()][0].tier);
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+			alert("Error getting participant data");
+		}
+	});
+};
+ParseCSV = function(){
+	config = {
+		delimiter: ",",
+		newline: "",
+		header: false,
+		dynamicTyping: false,
+		preview: 0,
+		encoding: "",
+		worker: false,
+		comments: false,
+		step: undefined,
+		complete: function(results, file) {
+			console.log("Parsing complete:", results, file);
+		},
+		error: undefined,
+		download: false,
+		skipEmptyLines: true,
+		chunk: undefined,
+		fastMode: undefined,
+		beforeFirstChunk: undefined,
+		withCredentials: undefined
+	}
+	Papa.parse(GetFile(), config);
+};
+
+CalculateAverageMMR = function(){
+	var mmrs = GetMMRs();
+	var total = 0;
+	for(var i = 0; i < mmrs.length; i++){
+		total += mmrs[i];
+	}
+	var avg = total/mmrs.length;
+	console.log(avg);
+	return avg;
+};
+

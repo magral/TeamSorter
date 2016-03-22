@@ -3,5 +3,12 @@ Backend things to do
 -- Upload and parse from csv
 -- calculate average mmr
 -- pull mmr data based on champion name
+	- PER CHAMPION
+		- Get summonerID
+		- Pull Match data for last 10 games
+		- PER MATCH
+		 	- Get participants
+			- Get participant summonerID
+			- Get rank of participant 
 -- Display teams and the average team mmr
 -- create temporary links 

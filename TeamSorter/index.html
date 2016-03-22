@@ -14,37 +14,14 @@
 		<textarea name ="summonerNames" id = "sumNames" rows = "5" cols="50">Enter your Summoner Names here, separated by commas</textarea>
 		<button type = "button" onclick="ParseNames()">Create my teams</button>
 		<input type="file" id = "csv" multiple size = "50" onchange = "GrabFile()">
-		<button id = "test" value = "Run" onclick="doParse()">Run Parse Test</button>
+		<button id = "test" onclick="ParseCSV()">Run Parse Test</button>
+		<button id = "testAVG" onclick="CalculateAverageMMR()">Run MMR AVG Test</button>
+		<button id = "testAPI" onclick="GetMatchList()">Test API Call</button>
 		<p id = "FileInfo"></p>
+		<p id = "SummonerID"></p>
 		<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
   		<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
 		<script></script>
 		<script src="Resources/PapaParse-master/papaparse.js"></script>
-		<script>
-			doParse = function(){
-				config = {
-					delimiter: ",",
-					newline: "",	// auto-detect
-					header: false,
-					dynamicTyping: false,
-					preview: 0,
-					encoding: "",
-					worker: false,
-					comments: false,
-					step: undefined,
-					complete: function(results, file) {
-						console.log("Parsing complete:", results, file);
-					},
-					error: undefined,
-					download: false,
-					skipEmptyLines: true,
-					chunk: undefined,
-					fastMode: undefined,
-					beforeFirstChunk: undefined,
-					withCredentials: undefined
-				}
-				Papa.parse(GetFile(), config);
-			};
-		</script>
 	</body>
 </html>
