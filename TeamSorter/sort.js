@@ -105,6 +105,7 @@ GetMatchList = function(){
 	});
 };
 GetParticipantsFromMatchlist = function(matchID){
+	var MAX_PLAYERS_PER_TEAM = 10;
 	$.ajax({
 		url: 'https://na.api.pvp.net/api/lol/na/v2.2/match/' + matchID.toString() + '?includeTimeline=false&api_key=' + API_KEY,
 		type: 'GET',
@@ -113,17 +114,20 @@ GetParticipantsFromMatchlist = function(matchID){
 			
 		},
 		success: function(json){
-			console.log(json["participantIdentities"][0]["player"].summonerId);
-			GetDivisionOfPlayer(json["participantIdentities"][0]["player"].summonerId);
+			//console.log(json["participantIdentities"][1]["player"].summonerId);
+			//for(var i = 0; i < MAX_PLAYERS_PER_TEAM; i++){
+				GetDivisionOfPlayer(json["participantIdentities"][1]["player"].summonerId);
+			//}
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown){
 			alert("Error getting participant data");
 		}
 	});
-	//move this call into get match list
-	//call per match list id
+
 };
 GetDivisionOfPlayer = function(summonerID){
+	var playerDivision;
+	var playerTier;
 	$.ajax({
 		url: 'https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/' + summonerID.toString() + '/entry?api_key=' + API_KEY,
 		type: 'GET',
@@ -134,12 +138,66 @@ GetDivisionOfPlayer = function(summonerID){
 		success: function(json){
 			console.log(json[summonerID.toString()][0]["entries"][0].division);
 			console.log(json[summonerID.toString()][0].tier);
+			
+			playerDivision = json[summonerID.toString()][0]["entries"][0].division;
+			playerTier = json[summonerID.toString()][0].tier;
+			CalculatePlayerMMR(playerDivision, playerTier);
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown){
 			alert("Error getting participant data");
 		}
 	});
 };
+CalculatePlayerMMR = function(playerDivision, playerTier){
+	var base;
+	var augment;
+	playerDivision = playerDivision.toString();
+	playerTier = playerTier.toString();
+	if(playerDivision == "BRONZE"){
+		base = 800;
+	}
+	else if(playerTier == "SILVER"){
+		base = 1150;
+	}
+	else if(playerTier == "GOLD"){
+		base = 1500;
+	}
+	else if(playerTier == "PLATINUM"){
+		base = 1850;
+	}
+	else if(playerTier == "DIAMOND"){
+		base = 2200;
+	}
+	else if(playerTier == "MASTER"){
+		base = 2550;
+	}
+	else if(playerTier == "CHALLENGER"){
+		base = 2900;
+	}
+	if(playerTier != "MASTER" && playerTier != "CHALLENGER"){
+		if(playerDivision == "V"){
+			augment = 34.5;
+		}	
+		else if(playerDivision == "IV"){
+			augment = 104.5
+		}
+		else if(playerDivision == "III"){
+			augment = 174.5;
+		}
+		else if(playerDivision == "II"){
+			augment = 244.5;
+		}
+		else if(playerDivision == "I"){
+			augment = 314.5
+		}
+	}
+	else{
+		augment = 34.5;
+	}
+	
+	var mmr = base + augment;
+	console.log(mmr);
+}
 ParseCSV = function(){
 	config = {
 		delimiter: ",",
