@@ -1,4 +1,10 @@
+//REQURIED GLOBAL VARS
 var API_KEY = "1e9722cb-94a0-4b5f-821f-0492453429b2";
+var csvFile;
+var playerMMRS = {};
+var players = new Array();
+var participantAVGs = new Array();
+
 ParseNames = function(){
 	var names = document.getElementById("sumNames").value;
 	var parsedNames = Array();
@@ -20,7 +26,6 @@ ParseNames = function(){
 	console.log(parsedNames);
 };
 
-var csvFile;
 GrabFile = function(){
 	var names = document.getElementById("csv");
 	var txt = "";
@@ -55,11 +60,9 @@ GrabFile = function(){
 };
 
 GetFile = function(){
-	console.log(csvFile);
 	return csvFile;
 };
-GetSummonerID = function(){
-	var SUMMONER_NAME = "Bearly Leah";
+GetSummonerID = function(SUMMONER_NAME){
 	$.ajax({
 		url: 'https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/' + SUMMONER_NAME + '?api_key=' + API_KEY,
 		type: 'GET',
@@ -74,6 +77,14 @@ GetSummonerID = function(){
 			var summonerID = json[SUMMONER_NAME].id;
 			
 			document.getElementById("SummonerID").innerHTML = summonerID;
+			GetMatchList(summonerID);
+			//var mmr = CalculateAverageMMR(participantAVGs);
+			//AddPlayerToAVGs(SUMMONER_NAME, mmr);
+
+		},
+		complete: function(json){
+			var mmr = CalculateAverageMMR(participantAVGs);
+			AddPlayerToAVGs(SUMMONER_NAME, mmr);
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown){
 			alert("error getting summoner data!");
@@ -81,8 +92,7 @@ GetSummonerID = function(){
 	});
 };
 var matchIDs = [];
-GetMatchList = function(){
-	var SUMMONER_ID = "28869688";
+GetMatchList = function(SUMMONER_ID){
 	var MAX_SEARCH_LENGTH = 1;
 	$.ajax({
 		url: 'https://na.api.pvp.net/api/lol/na/v2.2/matchlist/by-summoner/' + SUMMONER_ID + '?seasons=SEASON2016&beginIndex=0&endIndex=' + MAX_SEARCH_LENGTH.toString() + '&api_key=' + API_KEY,
@@ -141,7 +151,10 @@ GetDivisionOfPlayer = function(summonerID){
 			
 			playerDivision = json[summonerID.toString()][0]["entries"][0].division;
 			playerTier = json[summonerID.toString()][0].tier;
-			CalculatePlayerMMR(playerDivision, playerTier);
+			//CalculatePlayerMMR(playerDivision, playerTier);
+		},
+		complete: function(json){
+			CalculatePlayerMMR(playerDivision, playerTier);	
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown){
 			alert("Error getting participant data");
@@ -197,6 +210,8 @@ CalculatePlayerMMR = function(playerDivision, playerTier){
 	
 	var mmr = base + augment;
 	console.log(mmr);
+	participantAVGs.push(mmr);
+
 }
 ParseCSV = function(){
 	config = {
@@ -210,7 +225,12 @@ ParseCSV = function(){
 		comments: false,
 		step: undefined,
 		complete: function(results, file) {
-			console.log("Parsing complete:", results, file);
+			for(var i = 0; i < results["data"].length; i++){
+					players.push(results["data"][i][0]);
+			}
+			for(var i = 0; i < players.length; i++){
+				GetSummonerID(players[i]);
+			}
 		},
 		error: undefined,
 		download: false,
@@ -222,9 +242,13 @@ ParseCSV = function(){
 	}
 	Papa.parse(GetFile(), config);
 };
-
-CalculateAverageMMR = function(){
-	var mmrs = GetMMRs();
+AddParticipantMMRToAVG = function(mmr){
+	participantAVGs.push(mmr);
+}
+AddPlayerToAVGs = function(playerName, mmr){
+	playerMMRS["playerName"] = mmr;
+}
+CalculateAverageMMR = function(mmrs){
 	var total = 0;
 	for(var i = 0; i < mmrs.length; i++){
 		total += mmrs[i];
@@ -234,3 +258,6 @@ CalculateAverageMMR = function(){
 	return avg;
 };
 
+control = function(){
+	ParseCSV();
+}

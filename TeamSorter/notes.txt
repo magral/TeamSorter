@@ -12,3 +12,58 @@ Backend things to do
 			- Get rank of participant 
 -- Display teams and the average team mmr
 -- create temporary links 
+
+
+
+-------- CALL TREE --------------
+
+IF CSV UPLOAD: 
+ 		UPLOAD CSV FILE
+				|
+				|
+				V
+		PARSE CSV FILE
+				|
+				|
+				V
+		FOR EACH SUMMONER NAME GETSUMMONERID
+				|
+				|
+				V
+		GETMATCHLIST(SUMMONERID)
+				|
+				|
+				V
+		GETPARTICIPANTSFROMMATCHLIST(MatchID)
+				|
+				|
+				V
+		GETDIVISIONOFPLAYER(SUMMONERID)
+				|
+				|
+				V
+		GETMMROFPLAYER(PLAYERDIVISION,PLAYERTIER)
+				|
+				|
+				V
+		ADDTOPLAYERAVGLIST(MMR)
+				|
+				|
+				V
+		CALCULATEAVGMMRPERPLAYER(LIST_OF_MMRS)
+				|
+				|
+				V
+		CLEARPLAYERAVGLIST()
+				|
+				|
+				V
+		ADDPLAYERAVGTOLIST()
+				|
+				|
+				V
+		REPEAT BEFORE STEPS UNTIL DONE WITH PLAYERS
+				|
+				|
+				V
+		POPULATETEAMS()
